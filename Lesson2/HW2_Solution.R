@@ -1,4 +1,4 @@
-df <- read.csv('//vibo/nfs/CHPublic/客戶服務事業部/部門公用區/R語言課程/HW2/課程內容及題目/Lottery.csv', fileEncoding = 'UTF-8')
+df <- read.csv('C:/Users/judesu/Desktop/Lottery.csv', fileEncoding = 'UTF-8')
 
 # 資料轉換 --------------------------------------------------------------------
 str(df)
