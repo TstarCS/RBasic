@@ -1,0 +1,153 @@
+---
+title: "RBasic_L4"
+author: "TLYu"
+date: '2019-03-04'
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## dplyr
+dplyr套件
+<https://cran.r-project.org/web/packages/dplyr/dplyr.pdf>
+
+- filter: 篩選row
+- %>%   : 將當前資料集傳遞給下一個函數
+- select: 篩選columns
+- mutate: 新增/變化欄位
+- group_by:分組
+- summarise:總結
+- arrange: 排序
+- join: 類似excel的vlookup
+
+## 讀取資料
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# install.packages('dplyr')
+library(dplyr)
+
+# 上次的大樂透作業
+df <- 
+  read.csv(
+    file = '//vibo/nfs/CHPublic/客戶服務事業部/部門公用區/R語言課程/HW2/課程內容及題目/Lottery.csv',
+    fileEncoding = 'UTF-8')
+
+# 各區銷售負責人
+df2 <- read.csv(file = 'https://s.yam.com/Qdbh5',
+                fileEncoding = 'UTF-8')
+```
+
+## 上次的回家作業
+在西元2100年，由於受到少子化危機的影響，人口數越來越少，於是各縣市掀開了一波搶人大戰...<br>
+為了鼓勵人口移入，各縣市紛紛提出「縣市祝福」專案，<br>
+高雄市說：「你來，中多少錢我都再多給你1倍!」(共2倍)<br>
+桃園市說：「來我這！我再多給你2倍！」(共3倍)<br>
+台北市說：「不要理他們，我再多4倍！」(共5倍)<br>
+其他縣市則由於財政問題，無法提供縣市祝福
+```{r, echo = TRUE, message=FALSE}
+head(df)
+# 請上網搜尋dplyr套件中的case_when函數
+# 透過中獎金額，計算出在縣市祝福後，每個人會領到多少錢？
+# df3 <- df %>%
+#   mutate(實領金額 = case_when(
+#     
+#   ))
+```
+
+## 上次的回家作業
+具體的轉換條件如下
+
+- 高雄市 → 中獎金額 * 2
+- 桃園市 → 中獎金額 * 3
+- 台北市 → 中獎金額 * 5
+- 其他縣市 → 維持原中獎金額
+
+```{r, echo = TRUE, message=FALSE}
+df3 <- df %>%
+ mutate(
+   實領金額 = case_when(
+     grepl('高雄', 購買地區) ~ 中獎金額 * 2,
+     grepl('桃園', 購買地區) ~ 中獎金額 * 3,
+     grepl('台北', 購買地區) ~ 中獎金額 * 5,
+     TRUE ~ 中獎金額))
+```
+
+## group_by
+正常情況下，我們拿到的都只是原始資料，需要經過分組處理後才會有意義，如：<br>
+- 每位Agent/每個組別點了多少個Calltype<br>
+- 催收員打了多少通電話/回收多少錢<br>
+- ...<br>
+
+![group](13-dplyr-fig2.png)
+
+## summarise
+而整理資料的方法就是運用group_by與summarise函數！<br>
+例如我想要知道各縣市分別有多少筆訂單...
+```{r, echo = TRUE, message=FALSE}
+df %>%
+  group_by(購買地區) %>%
+  summarise(count = n())
+```
+
+## 練習1：group_by & summarise 組合應用
+那如果我想知道各縣市的總投注金額呢？
+```{r, echo = TRUE, message=FALSE}
+# df %>%
+#   group_by(購買地區) %>%
+#   summarise(總投注金額 = ...)
+```
+
+## 解答1：group_by & summarise 組合應用
+那如果我想知道各縣市的總投注金額呢？
+```{r, echo = TRUE, message=FALSE}
+df %>%
+  group_by(購買地區) %>%
+  summarise(總投注金額 = sum(投注金額))
+```
+
+## Join
+有時候資訊會散落在不同的表格，需要透過比對來整合資訊<br>(如excel的vlookup函數)<br>
+- 例如在計算客服人員的產值時，每個calltype有不同的產值分數
+```{r, echo = TRUE, message=FALSE}
+head(df, 3)
+head(df2, 3)
+```
+
+## Join
+```{r, echo = TRUE, message=FALSE}
+df4 <- left_join(df, df2, by = '購買地區')
+View(df4)
+```
+![](cap.JPG)
+
+## 練習題2
+- 各區長有多少筆訂單<br>
+- 各區長的投注總金額是多少？<br>
+```{r, echo = TRUE, message=FALSE}
+df4 %>%
+  group_by(經銷區長)%>%
+  summarise(投注訂單量 = n(),
+            總投注金額 = sum(投注金額))
+```
+
+## Join家族
+![](Joins.png)
+<br>from <http://rstudio-pubs-static.s3.amazonaws.com/227171_618ebdce0b9d44f3af65700e833593db.html>
+
+## 回家作業： 誰是大賣家?
+為了要刺激競爭提升銷售績效，公司決定幫各區區長打考核成績
+
+考核成績計算公式如下：<br>市場開發度(60%) + 銷售積分(40%)
+
+市場開發度：轄區購買人數/轄區人口數
+
+銷售積分：<br>
+- 投注金額 >= 1000 → 3分 <br> 
+- 投注金額 >=  500 → 2分 <br>
+- 投注金額 >=   50 → 1分 <br>
+
+請運用mutate, summarise, case_when, group_by等函數，<br>
+幫各區區長計算「市場開發度」、「銷售積分」與「考核成績」等三項分數~
