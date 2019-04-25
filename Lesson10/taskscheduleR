@@ -1,0 +1,43 @@
+library(taskscheduleR)
+
+# 自動化程式路徑
+myscript <- "~/RBasicL12/Outlook.R"
+
+## Run every day at the same time on 09:10, starting from tomorrow on
+## Mark: change the format of startdate to your locale if needed (e.g. US: %m/%d/%Y)
+taskscheduler_create(taskname = "MyDailyScript",
+                     rscript = myscript, 
+                     schedule = "DAILY",
+                     startdate = '2019/03/28',
+                     starttime = "09:10",
+                     # startdate = format(Sys.Date()+1, "%d/%m/%Y")
+                     )
+
+## Run every week on Saturday and Sunday at 09:10
+taskscheduler_create(taskname = "MyWeeklyScript",
+                     rscript = myscript, 
+                     schedule = "WEEKLY",
+                     startdate = '2019/03/28',
+                     starttime = "09:10",
+                     days = c('SUN', 'SAT'))
+
+## Run every 5 minutes, starting from 10:40
+taskscheduler_create(taskname = "MyMinutelyScript",
+                     rscript = myscript,
+                     schedule = "MINUTE",
+                     startdate = '2019/03/28',
+                     starttime = "13:27",
+                     modifier = 1)
+
+
+## get a data.frame of all tasks
+tasks <- taskscheduler_ls()
+str(tasks)
+
+## delete the tasks
+taskscheduler_delete(taskname = "myfancyscript")
+taskscheduler_delete(taskname = "myfancyscriptdaily")
+taskscheduler_delete(taskname = "myfancyscript_sunsat")
+taskscheduler_delete(taskname = "myfancyscript_5min")
+taskscheduler_delete(taskname = "myfancyscript_withargs_a")
+taskscheduler_delete(taskname = "myfancyscript_withargs_b")
